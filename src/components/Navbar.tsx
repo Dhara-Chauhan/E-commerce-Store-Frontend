@@ -1,49 +1,154 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { Layout, Dropdown } from "antd";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { Badge, Dropdown, Drawer } from "antd";
 import type { MenuProps } from "antd";
-import { DownOutlined, UserOutlined } from "@ant-design/icons";
-const { Header } = Layout;
+import {
+  ShoppingOutlined,
+  UserOutlined,
+  MenuOutlined,
+  DownOutlined,
+} from "@ant-design/icons";
+import type { RootState } from "../app/store";
 
 const Navbar: React.FC = () => {
-  const items: MenuProps["items"] = [
-    { key: "all", label: "All Products" },
-    { key: "women", label: "Women's Clothing" },
-    { key: "men", label: "Men's Clothing" },
-    { key: "jewelery", label: "Jewelery" },
-    { key: "electronics", label: "Electronics" },
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const cartItems = useSelector((state: RootState) => state.cart.cart);
+  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
+  const categoryItems: MenuProps["items"] = [
+    { key: "all", label: "All Products", onClick: () => navigate("/shop") },
+    {
+      key: "women",
+      label: "Women's Clothing",
+      onClick: () => navigate("/category/womens-dresses"),
+    },
+    {
+      key: "men",
+      label: "Men's Clothing",
+      onClick: () => navigate("/category/mens-shirts"),
+    },
+    {
+      key: "jewelery",
+      label: "Jewelry",
+      onClick: () => navigate("/category/tops"),
+    },
+    {
+      key: "electronics",
+      label: "Electronics",
+      onClick: () => navigate("/category/smartphones"),
+    },
   ];
+
+  const handleMobileMenuClose = () => setMobileMenuOpen(false);
 
   return (
     <>
-      <Header className="flex items-center justify-between fixed top-0 z-10 w-full px-1 md:px-8 lg:px-16">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <h1 className="text-xl sm:text-xs md:text-3xl font-bold pt-2 pl-0">
-            <Link to="/">E-Store</Link>
-          </h1>
-        </div>
-        <div className="flex items-center gap-1 md:w-auto md:gap-2">
-          <div className="flex justify-center md:w-auto pr-2">
-            <Dropdown menu={{ items }} trigger={["click"]}>
-              <a
-                onClick={(e) => e.preventDefault()}
-                className="text-lg cursor-pointer flex items-center gap-0.5"
+      <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm border-b border-gray-100 transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
+            {/* Logo */}
+            <div className="flex-shrink-0 flex items-center">
+              <Link
+                to="/"
+                className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
               >
-                Categories <DownOutlined className="text-sm pt-1" />
-              </a>
-            </Dropdown>
-          </div>
-          <div className="flex justify-center text-lg sm:gap-2">
-            <Link to="/shop">Products</Link>
-            <Link to="/cart" className="pl-2">
-              Cart
-            </Link>
-            <Link to="/login" className="pl-2">
-              <UserOutlined />
-            </Link>
+                LuxeStore
+              </Link>
+            </div>
+
+            {/* Desktop Menu */}
+            <nav className="hidden md:flex gap-8 items-center">
+              <Link
+                to="/"
+                className="text-gray-700 hover:text-primary font-medium transition-colors"
+              >
+                Home
+              </Link>
+              <Dropdown menu={{ items: categoryItems }} trigger={["hover"]}>
+                <a
+                  onClick={(e) => e.preventDefault()}
+                  className="text-gray-700 hover:text-primary font-medium cursor-pointer flex items-center gap-1 transition-colors"
+                >
+                  Shop <DownOutlined className="text-xs" />
+                </a>
+              </Dropdown>
+              <Link
+                to="/shop" // Fallback or separate link
+                className="text-gray-700 hover:text-primary font-medium transition-colors"
+              >
+                Products
+              </Link>
+            </nav>
+
+            {/* Icons */}
+            <div className="hidden md:flex items-center gap-6">
+              <Link to="/cart">
+                <Badge count={cartCount} showZero size="small" color="#4F46E5">
+                  <ShoppingOutlined className="text-2xl text-gray-700 hover:text-primary transition-colors cursor-pointer" />
+                </Badge>
+              </Link>
+              <Link to="/profile">
+                  <div className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                      <UserOutlined className="text-xl text-gray-700" />
+                  </div>
+              </Link>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center gap-4">
+              <Link to="/cart">
+                  <Badge count={cartCount} showZero size="small" color="#4F46E5">
+                    <ShoppingOutlined className="text-2xl text-gray-700" />
+                  </Badge>
+              </Link>
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="text-gray-700 hover:text-primary focus:outline-none"
+              >
+                <MenuOutlined className="text-2xl" />
+              </button>
+            </div>
           </div>
         </div>
-      </Header>
+      </header>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        title="Menu"
+        placement="right"
+        onClose={handleMobileMenuClose}
+        open={mobileMenuOpen}
+        styles={{ body: { padding: 0 } }}
+      >
+        <div className="flex flex-col p-4 space-y-4">
+          <Link
+            to="/"
+            className="text-lg font-medium text-gray-800 hover:text-primary"
+            onClick={handleMobileMenuClose}
+          >
+            Home
+          </Link>
+           <div className="border-t border-gray-100 my-2"></div>
+           <p className="text-sm text-gray-500 font-medium uppercase tracking-wider mb-2">Categories</p>
+           {categoryItems && Array.isArray(categoryItems) && categoryItems.map((item: any) => (
+               <div key={item.key} onClick={(e) => { item.onClick && item.onClick(e as any); handleMobileMenuClose(); }} className="py-2 text-gray-700 cursor-pointer hover:text-primary pl-4 border-l-2 border-transparent hover:border-primary transition-all">
+                   {item.label}
+               </div>
+           ))}
+           <div className="border-t border-gray-100 my-2"></div>
+          <Link
+             to="/profile"
+             className="flex items-center gap-2 text-lg font-medium text-gray-800 hover:text-primary"
+             onClick={handleMobileMenuClose}
+          >
+             <UserOutlined /> Profile
+          </Link>
+        </div>
+      </Drawer>
+      {/* Spacer for fixed header */}
+      <div className="h-20" />
     </>
   );
 };

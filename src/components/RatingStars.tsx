@@ -1,34 +1,17 @@
 import React from "react";
-import { StarFilled, StarOutlined } from "@ant-design/icons";
+import { Rate } from "antd";
 
 type Props = {
   rating: number;
   max?: number;
 };
 
-const RatingStars: React.FC<Props> = ({ rating, max = 5 }) => {
+const RatingStars: React.FC<Props> = ({ rating }) => {
   return (
-    <>
-      <p className="text-gray-700 mb-6">
-        Rating:
-        <span className="font-semibold flex items-center">
-          {Array.from({ length: max }, (_, i) =>
-            i < Math.round(rating) ? (
-              <StarFilled
-                style={{ color: "#DE7921" }}
-                key={i}
-                className="text-yellow-500 text-lg"
-              />
-            ) : (
-              <StarOutlined key={i} className="text-gray-400 text-lg" />
-            )
-          )}
-          <span className="ml-1 font-normal text-xs items-center">
-            {rating}
-          </span>
-        </span>
-      </p>
-    </>
+    <div className="flex items-center gap-2 mb-4">
+      <Rate disabled allowHalf defaultValue={rating} className="text-yellow-500 text-sm" />
+      <span className="text-sm text-gray-500 font-medium">({rating})</span>
+    </div>
   );
 };
 

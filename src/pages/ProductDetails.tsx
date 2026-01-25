@@ -1,135 +1,150 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import { Button, Spin } from "antd";
-import { useParams } from "react-router-dom";
-import Card from "antd/es/card/Card";
-// import { StarFilled, StarOutlined } from "@ant-design/icons";
+import React, { useState, useEffect } from "react";
+import { Button, Spin, Image, Divider } from "antd";
+import { useParams, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { type CartItem } from "../featues/cart/cartSlice";
-import { addToCart } from "../featues/cart/cartSlice";
+import { ShoppingCartOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { type CartItem, addToCart } from "../features/cart/cartSlice";
 import RatingStars from "../components/RatingStars";
 import QuantityBtn from "../components/QuantityBtn";
 import StockStatus from "../components/StockStatus";
+import { useApp } from "../context/AppContext";
 
 const ProductDetails: React.FC = () => {
-  const dispatch = useDispatch();
-
-  const AddToCart = (item: CartItem) => {
-    dispatch(addToCart(item));
-  };
-
-  const usdToInr = (usd: number) => {
-    const rate = 88.28; // approx conversion rate
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-    }).format(usd * rate);
-  };
-
   const { id } = useParams();
-  console.log("Product ID from URL:", id);
-
+  const dispatch = useDispatch();
+  const { usdToInr } = useApp();
+  
   const [product, setProduct] = useState<CartItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [mainImage, setMainImage] = useState<string>("");
+
+  const handleAddToCart = (item: CartItem) => {
+      // In a real app we might want to check current stock before adding
+    dispatch(addToCart({ ...item, quantity }));
+  };
 
   useEffect(() => {
-    const fetchproductDetails = async () => {
+    const fetchProductDetails = async () => {
       try {
-        const res = await fetch(`https://dummyJSON.com/products/${id}`);
+        const res = await fetch(`https://dummyjson.com/products/${id}`);
         const data = await res.json();
         setProduct(data);
-        setLoading(false);
+        setMainImage(data.thumbnail);
       } catch (err) {
-        console.error("Error fetching products:", err);
+        console.error("Error fetching product details:", err);
+      } finally {
+        setLoading(false);
       }
     };
-    if (id) {
-      fetchproductDetails();
-    }
+    if (id) fetchProductDetails();
   }, [id]);
+
+  if (loading) return <div className="flex justify-center items-center py-40"><Spin size="large" /></div>;
+
+  if (!product)
+    return <div className="text-center py-20 text-gray-500 text-lg">Product not found</div>;
+
   return (
-    <>
-      <h1 className="pl-4 pt-2 text-3xl">ProductDetails</h1>
+    <div className="pb-10">
+      <Link to="/shop" className="inline-flex items-center gap-2 text-gray-500 hover:text-primary mb-6 transition-colors">
+          <ArrowLeftOutlined /> Back to Shop
+      </Link>
 
-      {loading ? (
-        <Spin className="m-10" />
-      ) : product ? (
-        <div
-          className="max-w-5xl mx-auto p-4 
-                h-full sm:h-[400px] md:h-[480px] lg:h-[580px]"
-        >
-          <Card hoverable className="h-full p-4">
-            <div className="flex flex-col sm:flex-col md:flex-row lg:flex-row gap-8">
-              <div className="flex flex-col gap-12 justify-center items-center">
-                <img
-                  src={product.images ? product.images[0] : product.thumbnail}
-                  alt={product.title}
-                  className="max-h-64 sm:max-h-80 md:max-h-[420px] lg:max-h-96 object-contain hover:scale-125 transition-transform duration-300"
-                />
-              </div>
-
-              <div className="flex-1">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4">
-                  {product.title}
-                </h1>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-2xl sm:text-3xl md:text-4xl text-green-600 font-semibold hover:scale-103 transition-transform duration-500">
-                      {usdToInr(product.price)}
-                      <span className="text-sm text-[#db3964] font-normal ml-2">
-                        🔻{product.discountPercentage}% off
-                      </span>
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap md:flex-nowrap items-center gap-2">
-                    <QuantityBtn value={quantity} onChange={setQuantity} />
-                    <Button
-                      type="primary"
-                      size="large"
-                      shape="default"
-                      disabled={!product.stock}
-                      onClick={() => AddToCart({ ...product, quantity })}
-                      onClickCapture={() => alert("Added to Cart")}
-                    >
-                      Add to Cart
-                    </Button>
-                  </div>
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2">
+            {/* Image Gallery Side */}
+            <div className="p-8 bg-gray-50 flex flex-col items-center justify-center">
+                <div className="relative w-full aspect-square max-w-md mx-auto mb-6 bg-white rounded-2xl p-4 shadow-sm flex items-center justify-center">
+                    <Image
+                        src={mainImage}
+                        alt={product.title}
+                        className="object-contain w-full h-full"
+                        preview={true}
+                    />
                 </div>
-                <StockStatus
-                  status={product.availabilityStatus}
-                  stock={product.stock}
-                />
-                <div>
-                  <p className="text-gray-500 italic mb-2">
-                    {product.category}
-                  </p>
-                  <RatingStars rating={product.rating} />
-                  {/* <span>{product.reviews?.[0].comment}</span>
-                  <span>{product.reviews?.[1].comment}</span>
-                  <span>{product.reviews?.[2].comment}</span> */}
-                </div>
-                <p className="text-gray-700 mb-6"></p>
-                <p className="text-gray-700 mb-6 max-w-xl">
-                  {product.description}
-                </p>
-                <p>
-                  <span className="font-semibold">More Details: </span>
-                  <ul className="list-disc list-inside">
-                    <li>Brand: {product.brand || "N/A"}</li>
-                    <li>Shipping Information: {product.shippingInformation}</li>
-                    <li>Warranty Information: {product.warrantyInformation}</li>
-                    <li>Return Policy: {product.returnPolicy}</li>
-                  </ul>
-                </p>
-              </div>
+                {/* Thumbnails */}
+                {product.images && product.images.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-2 w-full max-w-md px-2">
+                        {product.images.map((img, index) => (
+                            <button 
+                                key={index} 
+                                onClick={() => setMainImage(img)}
+                                className={`w-16 h-16 flex-shrink-0 border-2 rounded-lg overflow-hidden bg-white ${mainImage === img ? 'border-primary' : 'border-transparent hover:border-gray-300'}`}
+                            >
+                                <img src={img} alt={`Thumbnail ${index}`} className="w-full h-full object-cover" />
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
-          </Card>
-        </div>
-      ) : (
-        <p className="text-center text-red-500">Product not found</p>
-      )}
-    </>
+
+            {/* Details Side */}
+            <div className="p-8 md:p-12 flex flex-col">
+                <div className="mb-1">
+                    <span className="text-sm font-medium text-primary uppercase tracking-wide bg-primary/5 px-2 py-1 rounded-md">{product.category}</span>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 mt-2">{product.title}</h1>
+                <RatingStars rating={product.rating} />
+                
+                <div className="flex items-center gap-4 mb-6">
+                    <span className="text-3xl font-bold text-gray-900">{usdToInr(product.price)}</span>
+                    {product.discountPercentage && (
+                        <span className="bg-rose-100 text-rose-600 px-2 py-0.5 rounded text-sm font-semibold">
+                            -{Math.round(product.discountPercentage)}%
+                        </span>
+                    )}
+                </div>
+
+                <StockStatus status={product.availabilityStatus} stock={product.stock} />
+
+                <p className="text-gray-600 leading-relaxed mb-8 border-l-4 border-gray-200 pl-4">
+                    {product.description}
+                </p>
+
+                <Divider />
+
+                <div className="flex flex-col sm:flex-row gap-6 sm:items-end mt-auto">
+                    <div className="flex flex-col gap-2">
+                        <span className="font-semibold text-gray-700">Quantity</span>
+                        <QuantityBtn value={quantity} onChange={setQuantity} />
+                    </div>
+                    
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={<ShoppingCartOutlined />}
+                        disabled={!product.stock}
+                        onClick={() => handleAddToCart({ ...product, quantity })}
+                        className="flex-1 h-12 text-lg font-medium shadow-lg hover:shadow-primary/30 rounded-xl"
+                    >
+                        Add to Cart
+                    </Button>
+                </div>
+                
+                {/* Additional Info / Trust Badges */}
+                <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-gray-100 text-xs text-gray-500">
+                    <div>
+                        <span className="font-semibold text-gray-700 block mb-1">Brand</span>
+                        {product.brand || "Generic"}
+                    </div>
+                    <div>
+                        <span className="font-semibold text-gray-700 block mb-1">SKU</span>
+                        {product.id}
+                    </div>
+                     <div>
+                        <span className="font-semibold text-gray-700 block mb-1">Warranty</span>
+                        {product.warrantyInformation || "Standard 1 Year"}
+                    </div>
+                     <div>
+                         <span className="font-semibold text-gray-700 block mb-1">Returns</span>
+                        {product.returnPolicy || "30 Days Return"}
+                    </div>
+                </div>
+            </div>
+          </div>
+      </div>
+    </div>
   );
 };
 
