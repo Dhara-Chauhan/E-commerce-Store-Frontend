@@ -5,16 +5,15 @@ import Products from "./pages/Products";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Layout from "antd/es/layout/layout";
+
 import Login from "./components/Login";
 import LayoutWrapper from "./components/LayoutWrapper";
+import Profile from "./components/Profile";
 
 function App() {
   return (
-    <>
       <Router>
-        <Layout>
-          <Navbar />
+        <Navbar />
           <Routes>
             <Route
               path="/"
@@ -49,6 +48,14 @@ function App() {
               }
             />
             <Route
+                path="/category/:slug"
+                element={
+                    <LayoutWrapper>
+                        <Products />
+                    </LayoutWrapper>
+                }
+            />
+            <Route
               path="/login"
               element={
                 <LayoutWrapper>
@@ -56,10 +63,16 @@ function App() {
                 </LayoutWrapper>
               }
             />
+            <Route
+              path="/profile"
+              element={
+                <LayoutWrapper>
+                  <Profile />
+                </LayoutWrapper>
+              }
+            />
           </Routes>
-        </Layout>
       </Router>
-    </>
   );
 }
 

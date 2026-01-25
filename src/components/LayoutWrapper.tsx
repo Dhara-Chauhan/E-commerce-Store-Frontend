@@ -1,18 +1,16 @@
-import { Layout } from "antd";
-import React from "react";
-import Navbar from "./Navbar";
-const { Content } = Layout;
+import React, { type ReactNode } from "react";
 
-const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+interface LayoutWrapperProps {
+  children: ReactNode;
+}
+
+const LayoutWrapper: React.FC<LayoutWrapperProps> = ({ children }) => {
   return (
-    <>
-      <Layout>
-        <Navbar />
-        <Content style={{ marginTop: 64, padding: "16px" }}>{children}</Content>
-      </Layout>
-    </>
+    <div className="min-h-[calc(100vh-80px)] w-full bg-background transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+        {children}
+      </div>
+    </div>
   );
 };
 
