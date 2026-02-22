@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Spin, Empty } from "antd";
+import React from "react";
+import { Spin, Empty, Breadcrumb } from "antd";
+import { useParams, Link } from "react-router-dom";
+import { useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { type CartItem } from "../features/cart/cartSlice";
 import { useDispatch } from "react-redux";
@@ -7,39 +9,43 @@ import { addToCart } from "../features/cart/cartSlice";
 import ProductCard from "../components/ProductCard";
 
 const Products: React.FC = () => {
-  const { usdToInr } = useApp();
+  const { slug } = useParams();
+  const { usdToInr, products, loading, fetchProducts } = useApp();
   const dispatch = useDispatch();
-
-  const [products, setProducts] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const handleAddToCart = (item: CartItem) => {
     dispatch(addToCart(item));
   };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch("https://dummyjson.com/products?limit=100");
-        const data = await res.json();
-        setProducts(data.products);
-      } catch (err) {
-        console.error("Error fetching products:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
+    fetchProducts(slug);
+  }, [slug, fetchProducts]);
+
+  const categoryName = slug ? slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, " ") : "All Products";
 
   return (
-    <div className="pb-10">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 px-2">
-        <div>
-            <h1 className="text-3xl font-bold text-gray-900">Shop All Products</h1>
-            <p className="text-gray-500 mt-1">Showing {products.length} results</p>
+    <div className="pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="py-8">
+        <Breadcrumb 
+          items={[
+            { title: <Link to="/">Home</Link> },
+            { title: <Link to="/shop">Shop</Link> },
+            slug ? { title: categoryName } : null
+          ].filter(Boolean) as any} 
+          className="mb-6"
+        />
+        
+        <div className="flex flex-col md:flex-row justify-between items-baseline gap-4 mb-10">
+          <div>
+            <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">
+              {categoryName}
+            </h1>
+            <p className="text-gray-500 font-medium">
+              Discover our curated collection of {products.length} products.
+            </p>
+          </div>
+          {/* Filters can be added here later */}
         </div>
-        {/* Future: Add Filters/Sort here */}
       </div>
 
       {loading ? (

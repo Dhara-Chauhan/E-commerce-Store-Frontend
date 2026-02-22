@@ -6,6 +6,11 @@ export interface CartItemType {
   isAuthenticated: boolean;
   login: () => void;
   logout: () => void;
+  products: any[];
+  categories: string[];
+  loading: boolean;
+  fetchProducts: (category?: string) => Promise<void>;
+  fetchCategories: () => Promise<void>;
 }
 
 export const AppContext = createContext<CartItemType | undefined>(undefined);

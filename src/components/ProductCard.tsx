@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Card, Rate, Badge } from "antd";
-import { Link } from "react-router-dom";
-import { ShoppingCartOutlined, EyeOutlined } from "@ant-design/icons";
+import { useNavigate, Link } from "react-router-dom";
+import { ShoppingCartOutlined, EyeOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import type { CartItem } from "../features/cart/cartSlice";
 
 type Props = {
@@ -11,36 +11,40 @@ type Props = {
 };
 
 const ProductCard: React.FC<Props> = ({ item, AddToCart, priceFormatter }) => {
+  const navigate = useNavigate();
+
   return (
     <Card
       hoverable
-      className="group relative overflow-hidden rounded-2xl border-none shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col"
-      style={{ padding: "16px", flex: 1, display: "flex", flexDirection: "column" }}
+      className="group bg-white rounded-3xl border border-gray-100 classic-shadow hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden h-full flex flex-col"
+      styles={{ body: { padding: "20px", flex: 1, display: "flex", flexDirection: "column" } }}
       cover={
-        <div className="relative h-64 p-6 bg-gray-50 flex items-center justify-center overflow-hidden">
+        <div className="relative h-72 bg-gray-50 flex items-center justify-center overflow-hidden p-8">
           {item.discountPercentage && (
-             <Badge.Ribbon text={`-${Math.round(item.discountPercentage)}%`} color="#F43F5E" className="absolute top-0 right-0" />
+             <div className="absolute top-4 left-4 z-10 bg-rose-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-lg">
+                -{Math.round(item.discountPercentage)}% Off
+             </div>
           )}
           <img
             alt={item.title}
             src={item.thumbnail}
-            className="h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-500 mix-blend-multiply"
+            className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out mix-blend-multiply"
           />
-          {/* Overlay Actions */}
-          <div className="absolute inset-0 bg-black/5 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px]">
+          
+          <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/20 to-transparent backdrop-blur-[2px] flex justify-center gap-3">
             <Button
                 shape="circle"
                 size="large"
                 icon={<EyeOutlined />}
-                className="bg-white text-gray-700 hover:text-primary border-none shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-75"
-                onClick={() => window.location.href = `/products/${item.id}`} // Using location for simplicity or could be Link wrapper
+                className="bg-white/90 border-none shadow-xl hover:scale-110 transition-transform"
+                onClick={() => navigate(`/products/${item.id}`)}
             />
             <Button
                 type="primary"
                 shape="circle"
                 size="large"
                 icon={<ShoppingCartOutlined />}
-                className="shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-150"
+                className="shadow-xl hover:scale-110 transition-transform premium-gradient border-none"
                 onClick={(e) => {
                     e.stopPropagation();
                     AddToCart(item);
@@ -50,15 +54,28 @@ const ProductCard: React.FC<Props> = ({ item, AddToCart, priceFormatter }) => {
         </div>
       }
     >
-      <div className="flex flex-col gap-2 flex-1">
-        <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">{item.category}</div>
-        <h3 className="text-lg font-bold text-gray-800 line-clamp-1 group-hover:text-primary transition-colors">
+      <div className="flex flex-col gap-3 flex-1">
+        <div className="flex justify-between items-start">
+          <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] bg-primary/5 px-2 py-1 rounded-md">
+            {item.category.replace(/-/g, " ")}
+          </span>
+          <div className="flex items-center gap-1">
+            <Rate disabled defaultValue={item.rating} allowHalf className="text-[10px] text-amber-400" />
+            <span className="text-[10px] text-gray-400 font-medium">({item.rating})</span>
+          </div>
+        </div>
+
+        <h3 className="text-base font-bold text-gray-800 line-clamp-2 leading-snug group-hover:text-primary transition-colors h-12">
             <Link to={`/products/${item.id}`}>{item.title}</Link>
         </h3>
-        <div className="mt-auto flex items-end justify-between">
+        
+        <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
             <div className="flex flex-col">
-                <span className="text-xl font-bold text-gray-900">{priceFormatter(item.price)}</span>
-                <Rate disabled defaultValue={item.rating} allowHalf className="text-xs text-yellow-500" />
+                <span className="text-2xl font-black text-gray-900 leading-none">{priceFormatter(item.price)}</span>
+                <span className="text-[10px] text-gray-400 mt-1">MRP incl. taxes</span>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                <ArrowRightOutlined className="text-xs text-gray-400 group-hover:text-primary transition-colors" />
             </div>
         </div>
       </div>

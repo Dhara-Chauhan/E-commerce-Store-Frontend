@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Badge, Dropdown, Drawer } from "antd";
+import { useApp } from "../context/AppContext";
 import type { MenuProps } from "antd";
 import {
   ShoppingOutlined,
@@ -14,31 +15,17 @@ import type { RootState } from "../app/store";
 const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { categories } = useApp();
   const cartItems = useSelector((state: RootState) => state.cart.cart);
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   const categoryItems: MenuProps["items"] = [
-    { key: "all", label: "All Products", onClick: () => navigate("/shop") },
-    {
-      key: "women",
-      label: "Women's Clothing",
-      onClick: () => navigate("/category/womens-dresses"),
-    },
-    {
-      key: "men",
-      label: "Men's Clothing",
-      onClick: () => navigate("/category/mens-shirts"),
-    },
-    {
-      key: "jewelery",
-      label: "Jewelry",
-      onClick: () => navigate("/category/tops"),
-    },
-    {
-      key: "electronics",
-      label: "Electronics",
-      onClick: () => navigate("/category/smartphones"),
-    },
+    { key: "all", label: "Shop All", onClick: () => navigate("/shop") },
+    ...categories.map((cat: string) => ({
+      key: cat,
+      label: cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " "),
+      onClick: () => navigate(`/category/${cat}`),
+    })),
   ];
 
   const handleMobileMenuClose = () => setMobileMenuOpen(false);
