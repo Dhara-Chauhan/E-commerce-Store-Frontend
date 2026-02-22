@@ -20,6 +20,7 @@
     font-family: var(--font-sans);
     background-color: var(--color-background);
     color: var(--color-text-main);
+    scroll-behavior: smooth;
   }
 
   body {
@@ -32,6 +33,30 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-primary text-white hover:bg-primary-hover transition-all duration-300 shadow-lg hover:shadow-primary/30 rounded-full px-6 py-2.5 font-medium cursor-pointer active:scale-95;
+    @apply bg-primary text-white hover:bg-primary-hover transition-all duration-300 shadow-lg hover:shadow-primary/30 rounded-xl px-6 py-3 font-semibold cursor-pointer active:scale-95 flex items-center justify-center gap-2;
+  }
+
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+
+  .classic-shadow {
+    @apply shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+  }
+
+  .premium-gradient {
+    @apply bg-gradient-to-br from-primary via-purple-600 to-secondary;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
   }
 }

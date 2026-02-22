@@ -8,11 +8,12 @@ import RatingStars from "../components/RatingStars";
 import QuantityBtn from "../components/QuantityBtn";
 import StockStatus from "../components/StockStatus";
 import { useApp } from "../context/AppContext";
+import api from "../services/api";
 
 const ProductDetails: React.FC = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { usdToInr } = useApp();
+  const { usdToInr, products } = useApp();
   
   const [product, setProduct] = useState<CartItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,17 +21,25 @@ const ProductDetails: React.FC = () => {
   const [mainImage, setMainImage] = useState<string>("");
 
   const handleAddToCart = (item: CartItem) => {
-      // In a real app we might want to check current stock before adding
     dispatch(addToCart({ ...item, quantity }));
   };
 
   useEffect(() => {
     const fetchProductDetails = async () => {
+      setLoading(true);
       try {
-        const res = await fetch(`https://dummyjson.com/products/${id}`);
-        const data = await res.json();
-        setProduct(data);
-        setMainImage(data.thumbnail);
+        // Try to find in existing products first for instant load
+        const localProduct = products.find((p: any) => p.id === Number(id));
+        if (localProduct) {
+          setProduct(localProduct);
+          setMainImage(localProduct.thumbnail);
+          setLoading(false);
+          return;
+        }
+
+        const response = await api.get(`/products/${id}`);
+        setProduct(response.data);
+        setMainImage(response.data.thumbnail);
       } catch (err) {
         console.error("Error fetching product details:", err);
       } finally {
@@ -38,7 +47,7 @@ const ProductDetails: React.FC = () => {
       }
     };
     if (id) fetchProductDetails();
-  }, [id]);
+  }, [id, products]);
 
   if (loading) return <div className="flex justify-center items-center py-40"><Spin size="large" /></div>;
 
@@ -66,7 +75,7 @@ const ProductDetails: React.FC = () => {
                 {/* Thumbnails */}
                 {product.images && product.images.length > 1 && (
                     <div className="flex gap-2 overflow-x-auto pb-2 w-full max-w-md px-2">
-                        {product.images.map((img, index) => (
+                        {product.images.map((img: string, index: number) => (
                             <button 
                                 key={index} 
                                 onClick={() => setMainImage(img)}
